@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shivang | Elite SSC Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;800&display=swap');
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: #020202; 
+            color: #fff; 
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .golden-text { 
+            background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 45%, #b38728 70%, #aa771c 100%); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+        }
+
+        /* --- LUXURY REALISTIC HOURGLASS --- */
+        .hg-wrapper {
+            transition: transform 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            width: 160px;
+            height: 240px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .hg-base {
+            width: 170px;
+            height: 18px;
+            background: linear-gradient(to bottom, #4a2c1a, #2a180d);
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.8), inset 0 2px 5px rgba(255,255,255,0.1);
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+        .hg-top { top: 0; }
+        .hg-bottom { bottom: 0; }
+
+        .hg-pillar {
+            position: absolute;
+            width: 8px;
+            height: 100%;
+            background: linear-gradient(90deg, #8a6d3b, #fcf6ba, #8a6d3b);
+            border-radius: 4px;
+            z-index: 5;
+        }
+        .p-left { left: -10px; }
+        .p-right { right: -10px; }
+
+        .glass-wrap {
+            position: absolute;
+            width: 120px;
+            height: 200px;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(2px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            clip-path: polygon(0 0, 100% 0, 100% 20%, 60% 50%, 100% 80%, 100% 100%, 0 100%, 0 80%, 40% 50%, 0 20%);
+            border-radius: 20px;
+        }
+
+        /* Sand Styles */
+        .sand-top {
+            position: absolute;
+            top: 0; width: 100%; height: 50%;
+            background: #d17fb1; 
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+            transform-origin: bottom;
+            transform: scaleY(1); /* Controlled by JS */
+        }
+
+        .sand-bottom {
+            position: absolute;
+            bottom: 0; width: 100%; height: 50%;
+            background: #d17fb1;
+            clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+            transform-origin: bottom;
+            transform: scaleY(0); /* Controlled by JS */
+        }
+
+        .sand-stream {
+            position: absolute;
+            top: 48%; left: 50%;
+            width: 2px; height: 52%;
+            background: #d17fb1;
+            transform: translateX(-50%);
+            box-shadow: 0 0 10px #d17fb1;
+            z-index: 2;
+        }
+
+        .glow {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(209,127,177,0.15) 0%, transparent 70%);
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+        }
+
+        .control-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .flipped { transform: rotate(180deg); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div id="splash" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black">
+        <div class="mb-6 opacity-0 animate-[fadeIn_1s_ease-in_forwards]">
+            <h2 class="text-xl tracking-[0.5em] text-gray-400 text-center uppercase">Executive Portal</h2>
+            <h1 class="text-7xl font-black golden-text tracking-tighter">SHIVANG</h1>
+        </div>
+        <div class="w-48 h-[2px] bg-gray-800 rounded-full overflow-hidden">
+            <div class="h-full bg-yellow-500 animate-[progress_3s_linear]"></div>
+        </div>
+    </div>
+
+    <main id="main-content" class="hidden h-screen flex flex-col justify-between p-8 opacity-0 transition-opacity duration-1000">
+        
+        <div class="flex justify-between items-center">
+            <button onclick="location.href='daily.html'" class="control-btn p-5 rounded-2xl group">
+                <i class="fa-solid fa-layer-group text-xl text-gray-400 group-hover:text-pink-400 transition-colors"></i>
+            </button>
+            <button onclick="location.href='average.html'" class="control-btn p-5 rounded-2xl group">
+                <i class="fa-solid fa-chart-line text-xl text-gray-400 group-hover:text-blue-400 transition-colors"></i>
+            </button>
+        </div>
+
+        <div class="flex-grow flex flex-col items-center justify-center">
+            <h1 id="timer-display" class="text-9xl font-black tracking-tighter golden-text drop-shadow-2xl mb-10">00:00:00</h1>
+            
+            <div id="hg-wrapper" class="hg-wrapper">
+                <div class="glow"></div>
+                <div class="hg-base hg-top"></div>
+                <div class="hg-pillar p-left"></div>
+                <div class="hg-pillar p-right"></div>
+                <div class="glass-wrap">
+                    <div id="sand-top" class="sand-top"></div>
+                    <div id="sand-stream" class="sand-stream opacity-0 transition-opacity"></div>
+                    <div id="sand-bottom" class="sand-bottom"></div>
+                </div>
+                <div class="hg-base hg-bottom"></div>
+            </div>
+        </div>
+
+        <div class="max-w-md mx-auto w-full space-y-4">
+            <button id="startStopBtn" onclick="toggleTimer()" class="w-full bg-white text-black font-black py-7 rounded-[2.5rem] text-2xl uppercase tracking-widest hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] transition-all">
+                Start Studying
+            </button>
+            <button onclick="toggleFullScreen()" class="w-full py-3 text-gray-500 text-xs font-bold tracking-[0.3em] uppercase opacity-50">
+                Focus Mode (Full Screen)
+            </button>
+        </div>
+    </main>
+
+    <script>
+        // Splash Hide
+        setTimeout(() => {
+            document.getElementById('splash').style.display = 'none';
+            const main = document.getElementById('main-content');
+            main.classList.remove('hidden');
+            setTimeout(() => main.classList.add('opacity-100'), 50);
+        }, 3000);
+
+        let startTime;
+        let elapsedTime = parseInt(localStorage.getItem('shivangTimer')) || 0;
+        let timerInterval;
+        let isRunning = false;
+        let isFlipped = false;
+
+        const display = document.getElementById('timer-display');
+        const btn = document.getElementById('startStopBtn');
+        const hgWrapper = document.getElementById('hg-wrapper');
+        const sandTop = document.getElementById('sand-top');
+        const sandBottom = document.getElementById('sand-bottom');
+        const stream = document.getElementById('sand-stream');
+
+        const TEN_MIN_MS = 10 * 60 * 1000;
+
+        function updateHourglass() {
+            // Calculate progress within the current 10-minute window
+            let currentCycleTime = elapsedTime % TEN_MIN_MS;
+            let progress = currentCycleTime / TEN_MIN_MS;
+
+            // Update sand levels
+            sandTop.style.transform = `scaleY(${1 - progress})`;
+            sandBottom.style.transform = `scaleY(${progress})`;
+
+            // Check if 10 minutes reached to flip
+            let totalCycles = Math.floor(elapsedTime / TEN_MIN_MS);
+            if (totalCycles % 2 !== 0 && !isFlipped) {
+                hgWrapper.classList.add('flipped');
+                isFlipped = true;
+            } else if (totalCycles % 2 === 0 && isFlipped) {
+                hgWrapper.classList.remove('flipped');
+                isFlipped = false;
+            }
+        }
+
+        function updateDisplay() {
+            let totalSec = Math.floor(elapsedTime / 1000);
+            let h = Math.floor(totalSec / 3600);
+            let m = Math.floor((totalSec % 3600) / 60);
+            let s = totalSec % 60;
+            display.innerText = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            updateHourglass();
+        }
+
+        function toggleTimer() {
+    if (!isRunning) {
+        startTime = Date.now() - elapsedTime;
+
+        timerInterval = setInterval(() => {
+            elapsedTime = Date.now() - startTime;
+            updateDisplay();
+
+            // ✅ OLD SAVE (timer)
+            localStorage.setItem('shivangTimer', elapsedTime);
+
+            // 🔥 NEW SAVE (daily tracking system)
+            let today = new Date().toISOString().split("T")[0];
+            let studyData = JSON.parse(localStorage.getItem("studyTimeData")) || {};
+
+            studyData[today] = Math.floor(elapsedTime / 1000); // seconds
+
+            localStorage.setItem("studyTimeData", JSON.stringify(studyData));
+
+        }, 100);
+
+        btn.innerText = "Pause Session";
+        btn.style.backgroundColor = "transparent";
+        btn.style.color = "white";
+        btn.style.border = "1px solid rgba(255,255,255,0.2)";
+
+        stream.classList.remove('opacity-0');
+        isRunning = true;
+
+    } else {
+        clearInterval(timerInterval);
+
+        btn.innerText = "Resume Session";
+        btn.style.backgroundColor = "white";
+        btn.style.color = "black";
+
+        stream.classList.add('opacity-0');
+        isRunning = false;
+    }
+}
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+            else document.exitFullscreen();
+        }
+
+        // Initialize state
+        updateDisplay();
+    </script>
+</body>
+</html>

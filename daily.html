@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SSC CGL Domination System</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+        
+        :root {
+            --bg-deep: #050a18; 
+            --card-dark: #112240; 
+            --text-cream: #E1E1C7; 
+            --text-muted: #8892b0; 
+            --accent-neon: #64FFDA; 
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-cream);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .aura-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 10% 20%, rgba(100, 255, 218, 0.05) 0%, transparent 40%),
+                        radial-gradient(circle at 90% 80%, rgba(225, 225, 199, 0.02) 0%, transparent 40%);
+            z-index: -1;
+        }
+
+        .floating-header {
+            position: fixed;
+            top: 15px; left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .header-glass {
+            background: rgba(17, 34, 64, 0.8);
+            backdrop-filter: blur(12px);
+            padding: 12px 25px;
+            border-radius: 50px;
+            border: 1px solid rgba(225,225,199,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .main-wrapper {
+            margin-top: 100px;
+            padding: 20px;
+            padding-bottom: 40px;
+        }
+
+        .card-advance {
+            background: var(--card-dark);
+            border-radius: 28px;
+            padding: 24px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(225, 225, 199, 0.05);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .table-clip {
+            overflow-x: auto;
+            border-radius: 20px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(225,225,199,0.05);
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        
+        th { 
+            background: rgba(17, 34, 64, 0.5);
+            padding: 15px 5px; 
+            font-size: 10px; 
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(225,225,199,0.05);
+        }
+
+        .habit-title {
+            position: sticky; left: 0;
+            background: var(--card-dark) !important;
+            padding: 15px;
+            font-weight: 700;
+            color: var(--text-cream);
+            border-right: 1px solid rgba(225,225,199,0.1);
+            z-index: 10;
+            font-size: 13px;
+        }
+
+        input[type="checkbox"] {
+            appearance: none;
+            width: 22px; height: 22px;
+            border-radius: 6px;
+            border: 2px solid var(--text-muted);
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        input[type="checkbox"]:checked {
+            background: var(--accent-neon);
+            border-color: var(--accent-neon);
+            box-shadow: 0 0 10px rgba(100, 255, 218, 0.5);
+        }
+
+        input[type="checkbox"]:checked::after {
+            content: "\f00c";
+            font-family: "Font Awesome 6 Free"; font-weight: 900;
+            color: var(--bg-deep); font-size: 12px;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        }
+
+        .stat-pill {
+            background: var(--card-dark);
+            border-radius: 20px;
+            padding: 18px;
+            text-align: center;
+            border: 1px solid rgba(225,225,199,0.05);
+        }
+
+        .stat-val { font-size: 24px; font-weight: 800; color: var(--accent-neon); }
+        .stat-label { font-size: 10px; letter-spacing: 1px; color: var(--text-muted); }
+
+        ::-webkit-scrollbar { height: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(225,225,199,0.1); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="aura-bg"></div>
+
+    <div class="floating-header">
+        <div class="header-glass">
+            <h1 class="text-[#E1E1C7] text-lg font-bold tracking-widest uppercase">SSC<span class="text-[#64FFDA]">CGL</span></h1>
+        </div>
+    </div>
+
+    <div class="main-wrapper">
+        
+        <div class="mb-10 text-center">
+            <h2 class="text-3xl font-extrabold tracking-tight text-[#E1E1C7]">SSC CGL Domination</h2>
+            <p class="text-[#8892b0] text-sm mt-1">Mission: <span class="text-[#64FFDA]">AIR Rank 🔥</span> for Shivang</p>
+            <div class="h-1 w-16 bg-[#64FFDA] mx-auto mt-3 rounded-full opacity-50"></div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-5 mb-8">
+            <div class="stat-pill">
+                <p class="stat-label uppercase font-bold">Monthly Score</p>
+                <div id="scoreVal" class="stat-val">0%</div>
+            </div>
+            <div class="stat-pill">
+                <p class="stat-label uppercase font-bold">Goals Hit</p>
+                <div id="doneVal" class="stat-val text-[#E1E1C7]">0</div>
+            </div>
+        </div>
+
+        <div class="card-advance relative">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-[#8892b0] mb-6">SSC Performance Map</h3>
+            <div style="height: 220px;">
+                <canvas id="overallChart"></canvas>
+            </div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-4 text-center">
+                <span id="leftVal" class="text-4xl font-black block text-[#E1E1C7]">0</span>
+                <span class="text-[8px] uppercase text-[#8892b0] font-bold tracking-wider">Left</span>
+            </div>
+        </div>
+
+        <div class="card-advance">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xs font-bold uppercase tracking-widest text-[#8892b0]">Consistency Grid</h3>
+                <span class="text-[10px] bg-[#64FFDA]/10 text-[#64FFDA] px-3 py-1 rounded-full font-bold">Swipe Right →</span>
+            </div>
+            <div class="table-clip">
+                <table id="gridTable"></table>
+            </div>
+        </div>
+
+        <div class="card-advance">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-[#8892b0] mb-6">Consistency Growth</h3>
+            <div style="height: 180px;">
+                <canvas id="mentalChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const habits = [
+            "Early Rise ☀️",
+            "Math Practice 🔢",
+            "Reasoning 🧠",
+            "English 📖",
+            "GK / GS 🌍",
+            "Previous Year Questions 📊",
+            "Mock Test 📝",
+            "Revision 🔄",
+            "Speed Practice ⚡",
+            "Focus Mode 📵",
+            "Workout 💪",
+            "Sleep 7-8h 🌙"
+        ];
+
+        const days = 31;
+        // Updated localStorage key to keep SSC data separate
+        let data = JSON.parse(localStorage.getItem("ssc_domination_v1")) || Array(habits.length).fill().map(() => Array(days).fill(0));
+        let charts = {};
+
+        function init() {
+            renderTable();
+            setupCharts();
+            updateDashboard();
+        }
+
+        function renderTable() {
+            let header = `<tr><th class="habit-title">Activity</th>` + Array.from({length: days}, (_, i) => `<th>${i + 1}</th>`).join("") + "</tr>";
+            let rows = habits.map((h, hIdx) => {
+                let cells = data[hIdx].map((v, dIdx) => 
+                    `<td><input type="checkbox" ${v ? "checked" : ""} onchange="toggle(${hIdx},${dIdx})"></td>`
+                ).join("");
+                return `<tr><td class="habit-title">${h}</td>${cells}</tr>`;
+            }).join("");
+            document.getElementById("gridTable").innerHTML = header + rows;
+        }
+
+        function toggle(h, d) {
+            data[h][d] = data[h][d] ? 0 : 1;
+            localStorage.setItem("ssc_domination_v1", JSON.stringify(data));
+            updateDashboard();
+        }
+
+        function setupCharts() {
+            Chart.defaults.color = '#8892b0';
+            charts.overall = new Chart(document.getElementById("overallChart"), {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [0, 100],
+                        backgroundColor: ['#64FFDA', 'rgba(100, 255, 218, 0.05)'],
+                        borderWidth: 0,
+                        borderRadius: 15
+                    }]
+                },
+                options: { cutout: '85%', plugins: { legend: { display: false } }, maintainAspectRatio: false }
+            });
+
+            charts.mental = new Chart(document.getElementById("mentalChart"), {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 31}, (_, i) => i + 1),
+                    datasets: [{
+                        data: [],
+                        borderColor: '#64FFDA',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        fill: true,
+                        backgroundColor: 'rgba(100, 255, 218, 0.02)'
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                        y: { display: false }, 
+                        x: { grid: { display: false }, ticks: { font: { size: 9 } } } 
+                    }
+                }
+            });
+        }
+
+        function updateDashboard() {
+            let total = habits.length * days;
+            let done = 0;
+            let dailyProgress = Array(days).fill(0);
+            data.forEach((row) => { row.forEach((v, d) => { if (v) { done++; dailyProgress[d]++; } }); });
+
+            document.getElementById("doneVal").innerText = done;
+            document.getElementById("scoreVal").innerText = Math.round((done / total) * 100) + "%";
+            document.getElementById("leftVal").innerText = total - done;
+
+            charts.overall.data.datasets[0].data = [done, total - done];
+            charts.overall.update();
+            charts.mental.data.datasets[0].data = dailyProgress;
+            charts.mental.update();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
