@@ -118,14 +118,19 @@
     </div>
 
     <div class="main-wrapper">
-        <div class="grid grid-cols-2 gap-5 mb-8">
+        <!-- New Stats Row -->
+        <div class="grid grid-cols-3 gap-3 mb-8">
             <div class="stat-pill">
-                <p class="stat-label uppercase font-bold">Monthly Score</p>
-                <div id="scoreVal" class="stat-val">0%</div>
+                <p class="stat-label">MONTHLY</p>
+                <div id="scoreVal" class="stat-val text-sm">0%</div>
             </div>
             <div class="stat-pill">
-                <p class="stat-label uppercase font-bold">Goals Hit</p>
-                <div id="doneVal" class="stat-val text-[#E1E1C7]">0</div>
+                <p class="stat-label">TODAY</p>
+                <div id="todayHabits" class="stat-val text-sm">0/12</div>
+            </div>
+            <div class="stat-pill">
+                <p class="stat-label">TOTAL</p>
+                <div id="doneVal" class="stat-val text-sm">0</div>
             </div>
         </div>
 
@@ -160,25 +165,58 @@
         let data = JSON.parse(localStorage.getItem("ssc_domination_v1")) || Array(habits.length).fill().map(() => Array(days).fill(0));
         let charts = {};
 
-        function syncWithTimer() {
-            // Get data from index.html timer
-            const timerMs = parseInt(localStorage.getItem('shivangTimer')) || 0;
-            const studySeconds = Math.floor(timerMs / 1000);
-            const todayIdx = new Date().getDate() - 1; // Current day (0-30)
-
-            // Auto-tick logic (If study > 1 hour)
-            if (studySeconds >= 3600) {
-                const autoHabits = ["Math Practice 🔢", "Focus Mode 📵", "Revision 🔄"];
-                autoHabits.forEach(hName => {
-                    const hIdx = habits.indexOf(hName);
-                    if (hIdx !== -1) data[hIdx][todayIdx] = 1;
-                });
+        // 🔥 MONTHLY RESET LOGIC
+        function checkMonthlyReset() {
+            let currentMonth = new Date().getMonth();
+            let savedMonth = localStorage.getItem("savedMonth");
+            if (savedMonth != currentMonth) {
+                data = Array(habits.length).fill().map(() => Array(days).fill(0));
                 localStorage.setItem("ssc_domination_v1", JSON.stringify(data));
+                localStorage.setItem("savedMonth", currentMonth);
             }
         }
 
+        // 🔥 ACCURATE AUTO-SYNC LOGIC
+        function syncWithTimer() {
+            let todayDateKey = new Date().toISOString().split("T")[0];
+            let studyData = JSON.parse(localStorage.getItem("studyTimeData")) || {};
+            
+            // Get ONLY today's study seconds
+            const todayStudySeconds = studyData[todayDateKey] || 0;
+            const todayIdx = new Date().getDate() - 1;
+
+            let changed = false;
+
+            // Tier 1: 1 Hour (Basic Consistency)
+            if (todayStudySeconds >= 3600) {
+                ["Math Practice 🔢", "Focus Mode 📵"].forEach(h => {
+                    let idx = habits.indexOf(h);
+                    if(data[idx][todayIdx] === 0) { data[idx][todayIdx] = 1; changed = true; }
+                });
+            }
+
+            // Tier 2: 4 Hours (Deep Work)
+            if (todayStudySeconds >= 4 * 3600) {
+                ["Reasoning 🧠", "Revision 🔄"].forEach(h => {
+                    let idx = habits.indexOf(h);
+                    if(data[idx][todayIdx] === 0) { data[idx][todayIdx] = 1; changed = true; }
+                });
+            }
+
+            // Tier 3: 8 Hours (Domination)
+            if (todayStudySeconds >= 8 * 3600) {
+                ["Previous Year Questions 📊", "Speed Practice ⚡"].forEach(h => {
+                    let idx = habits.indexOf(h);
+                    if(data[idx][todayIdx] === 0) { data[idx][todayIdx] = 1; changed = true; }
+                });
+            }
+
+            if(changed) localStorage.setItem("ssc_domination_v1", JSON.stringify(data));
+        }
+
         function init() {
-            syncWithTimer(); // Run sync before rendering
+            checkMonthlyReset();
+            syncWithTimer();
             renderTable();
             setupCharts();
             updateDashboard();
@@ -218,9 +256,20 @@
         function updateDashboard() {
             let total = habits.length * days;
             let done = 0;
-            data.forEach((row) => { row.forEach((v) => { if (v) done++; }); });
+            const todayIdx = new Date().getDate() - 1;
+            let todayDone = 0;
+
+            data.forEach((row, hIdx) => { 
+                row.forEach((v, dIdx) => { 
+                    if (v) {
+                        done++;
+                        if(dIdx === todayIdx) todayDone++;
+                    }
+                }); 
+            });
 
             document.getElementById("doneVal").innerText = done;
+            document.getElementById("todayHabits").innerText = todayDone + "/12";
             document.getElementById("scoreVal").innerText = Math.round((done / total) * 100) + "%";
             document.getElementById("leftVal").innerText = total - done;
 

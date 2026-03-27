@@ -23,7 +23,6 @@
             -webkit-text-fill-color: transparent; 
         }
 
-        /* --- LUXURY REALISTIC HOURGLASS --- */
         .hg-wrapper {
             transition: transform 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             width: 160px;
@@ -71,14 +70,13 @@
             border-radius: 20px;
         }
 
-        /* Sand Styles */
         .sand-top {
             position: absolute;
             top: 0; width: 100%; height: 50%;
             background: #d17fb1; 
             clip-path: polygon(0 0, 100% 0, 50% 100%);
             transform-origin: bottom;
-            transform: scaleY(1); /* Controlled by JS */
+            transform: scaleY(1);
         }
 
         .sand-bottom {
@@ -87,7 +85,7 @@
             background: #d17fb1;
             clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
             transform-origin: bottom;
-            transform: scaleY(0); /* Controlled by JS */
+            transform: scaleY(0);
         }
 
         .sand-stream {
@@ -139,6 +137,9 @@
         <div class="flex justify-between items-center">
             <button onclick="location.href='daily.html'" class="control-btn p-5 rounded-2xl group">
                 <i class="fa-solid fa-layer-group text-xl text-gray-400 group-hover:text-pink-400 transition-colors"></i>
+            </button>
+            <button onclick="resetTimer()" class="control-btn px-6 py-3 rounded-xl text-xs font-bold tracking-widest text-red-400 hover:bg-red-500/10 uppercase">
+                Reset Session
             </button>
             <button onclick="location.href='average.html'" class="control-btn p-5 rounded-2xl group">
                 <i class="fa-solid fa-chart-line text-xl text-gray-400 group-hover:text-blue-400 transition-colors"></i>
@@ -196,16 +197,23 @@
 
         const TEN_MIN_MS = 10 * 60 * 1000;
 
+        // 🔥 Logic for Daily Reset
+        function checkDailyReset() {
+            let today = new Date().toISOString().split("T")[0];
+            let lastDate = localStorage.getItem("lastSavedDate");
+            if (lastDate !== today) {
+                elapsedTime = 0;
+                localStorage.setItem('shivangTimer', 0);
+                localStorage.setItem("lastSavedDate", today);
+            }
+        }
+
         function updateHourglass() {
-            // Calculate progress within the current 10-minute window
             let currentCycleTime = elapsedTime % TEN_MIN_MS;
             let progress = currentCycleTime / TEN_MIN_MS;
-
-            // Update sand levels
             sandTop.style.transform = `scaleY(${1 - progress})`;
             sandBottom.style.transform = `scaleY(${progress})`;
 
-            // Check if 10 minutes reached to flip
             let totalCycles = Math.floor(elapsedTime / TEN_MIN_MS);
             if (totalCycles % 2 !== 0 && !isFlipped) {
                 hgWrapper.classList.add('flipped');
@@ -226,52 +234,74 @@
         }
 
         function toggleTimer() {
-    if (!isRunning) {
-        startTime = Date.now() - elapsedTime;
+            if (!isRunning) {
+                checkDailyReset();
+                startTime = Date.now() - elapsedTime;
 
-        timerInterval = setInterval(() => {
-            elapsedTime = Date.now() - startTime;
-            updateDisplay();
+                timerInterval = setInterval(() => {
+                    let now = Date.now();
+                    let sessionIncrement = now - (startTime + elapsedTime); 
+                    elapsedTime = now - startTime;
+                    
+                    updateDisplay();
 
-            // ✅ OLD SAVE (timer)
-            localStorage.setItem('shivangTimer', elapsedTime);
+                    // ✅ Standard Save
+                    localStorage.setItem('shivangTimer', elapsedTime);
 
-            // 🔥 NEW SAVE (daily tracking system)
-            let today = new Date().toISOString().split("T")[0];
-            let studyData = JSON.parse(localStorage.getItem("studyTimeData")) || {};
+                    // 🔥 CORRECT ADDITION LOGIC (Prevent Overwriting)
+                    let today = new Date().toISOString().split("T")[0];
+                    let studyData = JSON.parse(localStorage.getItem("studyTimeData")) || {};
+                    
+                    // We store the total elapsed time of the day
+                    studyData[today] = Math.floor(elapsedTime / 1000); 
 
-            studyData[today] = Math.floor(elapsedTime / 1000); // seconds
+                    localStorage.setItem("studyTimeData", JSON.stringify(studyData));
+                }, 100);
 
-            localStorage.setItem("studyTimeData", JSON.stringify(studyData));
+                btn.innerText = "Pause Session";
+                btn.style.backgroundColor = "transparent";
+                btn.style.color = "white";
+                btn.style.border = "1px solid rgba(255,255,255,0.2)";
+                stream.classList.remove('opacity-0');
+                isRunning = true;
 
-        }, 100);
+            } else {
+                clearInterval(timerInterval);
+                btn.innerText = "Resume Session";
+                btn.style.backgroundColor = "white";
+                btn.style.color = "black";
+                stream.classList.add('opacity-0');
+                isRunning = false;
+            }
+        }
 
-        btn.innerText = "Pause Session";
-        btn.style.backgroundColor = "transparent";
-        btn.style.color = "white";
-        btn.style.border = "1px solid rgba(255,255,255,0.2)";
+        function resetTimer() {
+            if(confirm("Are you sure you want to reset this session?")) {
+                clearInterval(timerInterval);
+                elapsedTime = 0;
+                isRunning = false;
+                localStorage.setItem('shivangTimer', 0);
+                
+                // Also reset today's data in the tracker if needed
+                let today = new Date().toISOString().split("T")[0];
+                let studyData = JSON.parse(localStorage.getItem("studyTimeData")) || {};
+                studyData[today] = 0;
+                localStorage.setItem("studyTimeData", JSON.stringify(studyData));
 
-        stream.classList.remove('opacity-0');
-        isRunning = true;
-
-    } else {
-        clearInterval(timerInterval);
-
-        btn.innerText = "Resume Session";
-        btn.style.backgroundColor = "white";
-        btn.style.color = "black";
-
-        stream.classList.add('opacity-0');
-        isRunning = false;
-    }
-}
+                btn.innerText = "Start Studying";
+                btn.style.backgroundColor = "white";
+                btn.style.color = "black";
+                stream.classList.add('opacity-0');
+                updateDisplay();
+            }
+        }
 
         function toggleFullScreen() {
             if (!document.fullscreenElement) document.documentElement.requestFullscreen();
             else document.exitFullscreen();
         }
 
-        // Initialize state
+        checkDailyReset();
         updateDisplay();
     </script>
 </body>

@@ -68,10 +68,10 @@
     <main class="max-w-md mx-auto space-y-6">
 
         <div class="stat-card text-center">
-            <p class="text-[10px] uppercase font-bold text-gray-500 tracking-[0.2em] mb-3">Live Session Today</p>
+            <p class="text-[10px] uppercase font-bold text-gray-500 tracking-[0.2em] mb-3">Today's Total Stored</p>
             <h2 id="todayTime" class="text-6xl font-black golden-text">00:00:00</h2>
             <div class="mt-5 flex justify-center items-center gap-2">
-                <span id="diffTag" class="tag-premium">Syncing Data...</span>
+                <span id="diffTag" class="tag-premium">Syncing...</span>
             </div>
         </div>
 
@@ -81,7 +81,7 @@
                 <p id="habitsCount" class="text-2xl font-black text-[#64FFDA]">0</p>
             </div>
             <div class="stat-card">
-                <p class="text-[10px] uppercase font-bold text-gray-500 mb-2">Weekly Avg</p>
+                <p class="text-[10px] uppercase font-bold text-gray-500 mb-2">Study Days Avg</p>
                 <p id="weekAvg" class="text-2xl font-black">0.0h</p>
             </div>
         </div>
@@ -103,60 +103,66 @@
     </main>
 
     <script>
-        function formatTime(ms) {
-            let totalSec = Math.floor(ms / 1000);
-            let h = Math.floor(totalSec / 3600);
-            let m = Math.floor((totalSec % 3600) / 60);
-            let s = totalSec % 60;
+        function formatSeconds(seconds) {
+            let h = Math.floor(seconds / 3600);
+            let m = Math.floor((seconds % 3600) / 60);
+            let s = seconds % 60;
             return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
         }
 
         function initAnalytics() {
-            const currentRaw = parseInt(localStorage.getItem('shivangTimer')) || 0;
             const historyData = JSON.parse(localStorage.getItem('studyTimeData')) || {};
             const habitData = JSON.parse(localStorage.getItem('ssc_domination_v1')) || [];
-            const todayDate = new Date().getDate() - 1;
+            const todayKey = new Date().toISOString().split('T')[0];
+            const todayNum = new Date().getDate() - 1;
 
-            // 1. Today's Time
-            document.getElementById('todayTime').innerText = formatTime(currentRaw);
+            // 1. Today's Time (From Stored Data)
+            const todaySeconds = historyData[todayKey] || 0;
+            document.getElementById('todayTime').innerText = formatSeconds(todaySeconds);
 
-            // 2. Habit Sync (Connection with daily.html)
+            // 2. Habit Sync
             let dailyDone = 0;
-            habitData.forEach(row => { if(row[todayDate]) dailyDone++; });
+            habitData.forEach(row => { if(row[todayNum]) dailyDone++; });
             document.getElementById('habitsCount').innerText = dailyDone + " / 12";
 
-            // 3. Chart & Average Logic
+            // 3. Chart & Smart Average Logic
             const labels = [];
-            const dataPoints = [];
+            const dataPoints = []; // Stores numeric hours
+            
             for (let i = 6; i >= 0; i--) {
                 let d = new Date();
                 d.setDate(d.getDate() - i);
                 let key = d.toISOString().split('T')[0];
                 labels.push(d.toLocaleDateString('en-US', { weekday: 'short' }));
                 
-                let val = (i === 0) ? (currentRaw / 1000) : (historyData[key] || 0);
-                dataPoints.push((val / 3600).toFixed(2));
+                let seconds = historyData[key] || 0;
+                dataPoints.push(seconds / 3600); // Store as Raw Number
             }
 
-            const totalHours = dataPoints.reduce((a, b) => parseFloat(a) + parseFloat(b), 0);
-            const avgHours = (totalHours / 7).toFixed(1);
+            const totalHours = dataPoints.reduce((a, b) => a + b, 0);
+            const activeDays = dataPoints.filter(h => h > 0).length;
+            
+            // Smart Average: Only divide by days you actually studied
+            const avgHours = activeDays > 0 ? (totalHours / activeDays).toFixed(1) : "0.0";
             document.getElementById('weekAvg').innerText = avgHours + "h";
 
-            // 4. Growth Tag
-            const yesterdayVal = parseFloat(dataPoints[5]);
-            const todayVal = parseFloat(dataPoints[6]);
+            // 4. Growth Tag Fix (Infinity & Zero Check)
+            const yesterdayVal = dataPoints[5]; // 2nd last item
+            const todayVal = dataPoints[6];     // last item
             const diffTag = document.getElementById('diffTag');
+            
             if (yesterdayVal > 0) {
                 const percent = (((todayVal - yesterdayVal) / yesterdayVal) * 100).toFixed(1);
                 diffTag.innerText = (percent >= 0 ? '↑ ' : '↓ ') + Math.abs(percent) + "% vs Yesterday";
             } else {
-                diffTag.innerText = "New Streak Started";
+                diffTag.innerText = todayVal > 0 ? "New Streak Started" : "No Data Yesterday";
             }
 
             // 5. Ranker's Motivation
             const mot = document.getElementById('rankMotivation');
-            if (avgHours >= 10 && dailyDone >= 10) mot.innerText = "Shivang, your stats are GOD-TIER. This is pure AIR 1 material. Stay focused.";
-            else if (avgHours >= 6) mot.innerText = "Selection Zone active. You are outperforming 99% of the crowd. Keep it up.";
+            const numericAvg = parseFloat(avgHours);
+            if (numericAvg >= 10 && dailyDone >= 10) mot.innerText = "Shivang, your stats are GOD-TIER. This is pure AIR 1 material. Stay focused.";
+            else if (numericAvg >= 6) mot.innerText = "Selection Zone active. You are outperforming 99% of the crowd. Keep it up.";
             else mot.innerText = "Warrior, SSC CGL is a battle of consistency. Increase your average and hit more habits!";
 
             // 6. Chart.js Render
@@ -166,9 +172,9 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        data: dataPoints,
+                        data: dataPoints.map(h => h.toFixed(2)), // Format for display
                         borderColor: '#d17fb1',
-                        borderWidth: 4, tension: 0.4, pointRadius: 4,
+                        borderWidth: 4, tension: 0.4, pointRadius: 5,
                         pointBackgroundColor: '#d17fb1', fill: true,
                         backgroundColor: 'rgba(209, 127, 177, 0.05)'
                     }]
@@ -177,7 +183,7 @@
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: { display: false },
+                        y: { display: false, beginAtZero: true },
                         x: { grid: { display: false }, ticks: { color: '#555', font: { size: 10, weight: 'bold' } } }
                     }
                 }
